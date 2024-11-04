@@ -8,12 +8,12 @@ import (
 	x "github.com/oosawy/gosc/gox"
 )
 
-func message(c x.Context, props struct{ Name string }) x.Node {
-	return x.N(fmt.Sprintf("Hello, %s! The time is %s.", props.Name, time.Now().Format("15:04:05")))
+func message(_ x.Context, props x.Props, _ x.Children) x.Node {
+	return x.V(fmt.Sprintf("Hello, %s! The time is %s.", props["name"], time.Now().Format("15:04:05")))
 }
 
-func app(_ x.Context) x.Node {
-	return x.E("div", nil, x.E("h1", nil, x.E(message, x.P{"Name": "world"})))
+func app(_ x.Context, _ x.Props, _ x.Children) x.Node {
+	return x.T("div", nil, x.T("h1", nil, x.E(message, x.P{"name": "world"})))
 }
 
 func main() {

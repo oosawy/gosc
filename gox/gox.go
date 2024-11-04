@@ -1,50 +1,27 @@
 package gox
 
-import "reflect"
+import "fmt"
 
-// The component Type must be a string or Component
-type Type any
+type P = Props
+type C = Children
+type N = Node
 
-type P map[string]any
-
-type Node interface {
-	node() any
-}
-
-type node struct {
-	value any
-}
-
-func (n node) node() any {
-	return n.value
-}
-
-func N(value any) Node {
-	return node{value}
-}
-
-type Element struct {
-	typ   Type
-	props P
-}
-
-func (e Element) node() any {
-	return e
-}
-
-// Component must be func(c Context, props any) Node
-type Component any
-
-func E(typ Type, props P, children ...Node) Element {
-	kind := reflect.TypeOf(typ).Kind()
-	switch kind {
-	case reflect.String, reflect.Func:
-		if props == nil {
-			props = make(P)
-		}
-		props["children"] = children
-		return Element{typ: typ, props: props}
+// primitive Value node constructor
+func V(value any) Node {
+	switch value.(type) {
+	case string, int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64, bool:
+		return &primNode{value}
 	default:
-		panic("typ must be a string or Component")
+		panic(fmt.Sprintf("x.N: invalid type for primitive Node: %T", value))
 	}
+}
+
+// Tag element constructor
+func T(tag string, props P, children ...Node) Element {
+	return &tagElement{tag, props, children}
+}
+
+// component Element constructor
+func E(comp CompFunc, props P, children ...Node) Element {
+	return &compElement{comp, props, children}
 }

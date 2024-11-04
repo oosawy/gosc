@@ -8,42 +8,34 @@ import (
 func Render(c context.Context, elm Element) string {
 	ctx := WithContext(c)
 
-	return renderElem(ctx, elm)
+	return elm.render(ctx)
 }
 
-func renderComp(ctx Context, comp Component, props P) Node {
-	c := WithContext(ctx)
-	return callComp(c, comp, props)
-}
-
-func renderElem(ctx Context, elm Element) string {
-	if valid, _ := isComp(elm.typ); valid {
-		node := renderComp(ctx, elm.typ, elm.props)
-		return renderNode(ctx, node)
-	}
-
-	if children, ok := elm.props["children"].([]Node); ok {
-		var renderedChildren string
-		for _, child := range children {
-			renderedChildren += renderNode(ctx, child)
-		}
-
-		return fmt.Sprintf("<%s>%s</%s>", elm.typ, renderedChildren, elm.typ)
-	}
-
-	return fmt.Sprintf("<%s></%s>", elm.typ, elm.typ)
-}
-
-func renderNode(ctx Context, node Node) string {
-	switch n := node.(type) {
-	case Element:
-		return renderElem(ctx, n)
+func (n primNode) render(ctx Context) string {
+	switch n.value.(type) {
+	case string, int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64:
+		return fmt.Sprintf("%v", n.value)
+	case bool:
+		return ""
 	default:
-		switch n := node.node().(type) {
-		case string:
-			return n
-		default:
-			return fmt.Sprint(n)
-		}
+		panic("invalid type")
 	}
+}
+
+func (c Children) render(ctx Context) string {
+	var renderedChildren string
+	for _, child := range c {
+		renderedChildren += child.render(ctx)
+	}
+	return renderedChildren
+}
+
+func (e tagElement) render(ctx Context) string {
+	children := e.children.render(ctx)
+	return fmt.Sprintf("<%s>%s</%s>", e.tag, children, e.tag)
+}
+
+func (e compElement) render(ctx Context) string {
+	node := e.comp(ctx, e.props, e.children)
+	return node.render(ctx)
 }
