@@ -8,14 +8,16 @@ type Type any
 type P map[string]any
 
 type Node interface {
-	node()
+	node() any
 }
 
 type node struct {
 	value any
 }
 
-func (node) node() {}
+func (n node) node() any {
+	return n.value
+}
 
 func N(value any) Node {
 	return node{value}
@@ -26,7 +28,9 @@ type Element struct {
 	props P
 }
 
-func (Element) node() {}
+func (e Element) node() any {
+	return e
+}
 
 // Component must be func(c Context, props any) Node
 type Component any

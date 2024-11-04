@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -16,6 +17,7 @@ func app(_ x.Context) x.Node {
 }
 
 func main() {
-	tree := x.Render(x.E(app, nil))
+	ctx := context.Background()
+	tree := x.Render(ctx, x.E(app, nil))
 	fmt.Printf("%+v\n", tree)
 }
